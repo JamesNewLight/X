@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Вкусный Мир</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍕</text></svg>">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+        body { background: #fdf2f8; color: #831843; padding-bottom: 70px; min-height: 100vh; }
+        .hidden { display: none !important; }
+
+        .header {
+            background: linear-gradient(135deg, #f472b6 0%, #be185d 100%);
+            color: white;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 28px 28px;
+            box-shadow: 0 4px 24px rgba(244, 114, 182, 0.3);
+        }
+        .logo { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { font-size: 22px; }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .header-btn {
+            background: rgba(255,255,255,0.25);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+        }
+        .header-btn:hover { background: rgba(255,255,255,0.35); }
+        .cart-count {
+            background: #fb923c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .search-bar { padding: 10px 16px; }
+        .search-bar input {
+            width: 100%;
+            padding: 10px 16px;
+            border-radius: 30px;
+            border: none;
+            background: white;
+            font-size: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: 0.2s;
+        }
+        .search-bar input:focus { outline: 2px solid #f472b6; }
+
+        .categories {
+            display: flex;
+            gap: 8px;
+            padding: 0 16px 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .categories::-webkit-scrollbar { display: none; }
+        .category-btn {
+            padding: 6px 18px;
+            border-radius: 30px;
+            border: none;
+            background: white;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+            color: #666;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .category-btn.active {
+            background: #f472b6;
+            color: white;
+            box-shadow: 0 4px 16px rgba(244, 114, 182, 0.25);
+        }
+
+        .products-list { padding: 6px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: 0.2s;
+            border: 1px solid rgba(244,114,182,0.06);
+        }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(244,114,182,0.08); }
+        .product-info { flex: 1; }
+        .product-name { font-weight: 600; font-size: 15px; color: #831843; }
+        .product-desc { font-size: 12px; color: #999; margin-top: 1px; }
+        .product-price { font-weight: 700; color: #f472b6; font-size: 16px; margin-top: 2px; }
+        .product-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 50%;
+            transition: 0.2s;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-btn:hover { background: #fdf2f8; }
+        .icon-btn.fav-active { color: #ec4899; }
+        .qty-btn {
+            background: #f472b6;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qty-btn:hover { transform: scale(1.05); background: #be185d; }
+        .qty-btn.remove { background: #fb923c; }
+        .qty-text { font-weight: 600; min-width: 20px; text-align: center; font-size: 15px; }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 12px 14px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            cursor: pointer;
+            padding: 2px 12px;
+            border-radius: 14px;
+            transition: 0.2s;
+            background: transparent;
+            border: none;
+            font-size: 9px;
+            color: #999;
+            font-weight: 500;
+        }
+        .nav-item .nav-icon { font-size: 20px; line-height: 1; }
+        .nav-item.active { color: #f472b6; background: rgba(244,114,182,0.08); }
+        .nav-item.active .nav-icon { color: #f472b6; }
+
+        .auth-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 16px;
+            background: linear-gradient(145deg, #fdf2f8 0%, #fce7f3 100%);
+        }
+        .auth-card {
+            background: white;
+            padding: 28px 22px;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(244,114,182,0.08);
+            width: 100%;
+            max-width: 380px;
+        }
+        .auth-card .logo-big { text-align: center; font-size: 48px; margin-bottom: 4px; }
+        .auth-card h2 { text-align: center; font-size: 20px; font-weight: 700; color: #831843; }
+        .auth-card .sub { text-align: center; color: #999; margin-bottom: 20px; font-size: 13px; }
+        .input-group { margin-bottom: 14px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 12px; color: #555; }
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            font-size: 14px;
+            background: #fafafa;
+            transition: 0.2s;
+        }
+        .input-group input:focus { outline: none; border-color: #f472b6; background: white; box-shadow: 0 0 0 3px rgba(244,114,182,0.1); }
+        .auth-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: #fdf2f8;
+            padding: 3px;
+            border-radius: 14px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: transparent;
+            color: #999;
+        }
+        .auth-tab.active { background: white; color: #831843; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .btn-primary {
+            background: linear-gradient(135deg, #f472b6, #be185d);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 15px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 20px rgba(244,114,182,0.25);
+        }
+        .btn-primary:hover { transform: scale(1.01); box-shadow: 0 8px 32px rgba(244,114,182,0.3); }
+        .btn-link {
+            background: none;
+            border: none;
+            color: #f472b6;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 0;
+            transition: 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-link:hover { color: #be185d; text-decoration: underline; }
+
+        .page { padding: 12px 16px; display: none; }
+        .page.active { display: block; }
+        .page-title { font-size: 18px; font-weight: 700; color: #831843; margin-bottom: 12px; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-state .empty-icon { font-size: 48px; margin-bottom: 8px; opacity: 0.4; }
+        .empty-state h3 { font-size: 16px; color: #831843; margin-bottom: 2px; }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #fdf2f8;
+        }
+        .cart-item-name { font-weight: 500; font-size: 14px; }
+        .cart-item-price { color: #f472b6; font-weight: 600; font-size: 14px; }
+        .cart-total {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: right;
+            padding: 14px 0;
+            border-top: 2px solid #fdf2f8;
+            margin-top: 6px;
+            color: #831843;
+        }
+
+        .profile-card {
+            background: linear-gradient(135deg, #f472b6, #be185d);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .profile-card .avatar { font-size: 40px; }
+        .profile-card .name { font-size: 18px; font-weight: 700; }
+        .profile-card .phone { opacity: 0.8; font-size: 13px; margin-top: 2px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .stat-item {
+            background: white;
+            padding: 12px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .stat-item .stat-value { font-size: 20px; font-weight: 700; color: #f472b6; }
+        .stat-item .stat-label { font-size: 11px; color: #999; margin-top: 2px; }
+        .loyalty-card {
+            background: linear-gradient(135deg, #fb923c, #f97316);
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+        .loyalty-card .progress-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            height: 5px;
+            margin: 10px 0;
+        }
+        .loyalty-card .progress-fill {
+            background: white;
+            border-radius: 20px;
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s;
+        }
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        .menu-item:hover { border-color: #f472b6; background: #fdf2f8; }
+        .menu-item .left { display: flex; align-items: center; gap: 10px; }
+        .menu-item .left span:first-child { font-size: 16px; }
+
+        .admin-card {
+            background: white;
+            padding: 14px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-left: 4px solid #f472b6;
+        }
+        .admin-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .admin-actions button {
+            padding: 3px 12px;
+            border-radius: 20px;
+            border: none;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .admin-actions .accept { background: #22c55e; color: white; }
+        .admin-actions .ready { background: #fb923c; color: white; }
+        .admin-actions .complete { background: #3b82f6; color: white; }
+        .admin-actions .cancel { background: #ef4444; color: white; }
+
+        .admin-only { display: none; }
+        .is-admin .admin-only { display: block; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-new { background: #fef3c7; color: #92400e; }
+        .status-accepted { background: #dbeafe; color: #1e40af; }
+        .status-ready { background: #d1fae5; color: #065f46; }
+        .status-completed { background: #e0e7ff; color: #3730a3; }
+        .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+        .recovery-info {
+            background: #fce7f3;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #831843;
+            border: 1px solid #fbcfe8;
+        }
+
+        .phone-display {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #fafafa;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+        }
+        .phone-display .phone-code {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .phone-display input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 0;
+            font-size: 14px;
+            outline: none;
+            min-width: 0;
+            width: 100%;
+        }
+        .phone-display input:focus { box-shadow: none; }
+
+        @media (max-width: 480px) {
+            .auth-card { padding: 20px 16px; }
+            .product-card { padding: 10px 12px; }
+            .profile-card { padding: 16px; }
+            .phone-display { padding: 10px 12px; }
+            .phone-display .phone-code { font-size: 13px; }
+            .phone-display input { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="authPage" class="auth-page">
+    <div class="auth-card">
+        <div class="logo-big">🍕</div>
+        <h2>Вкусный Мир</h2>
+        <p class="sub">Войдите или создайте аккаунт</p>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">🔑 Вход</button>
+            <button class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">📝 Регистрация</button>
+        </div>
+
+        <div id="loginForm">
+            <div class="input-group">
+                <label>📞 Телефон</label>
+                <div class="phone-display">
+                    <span class="phone-code">+7</span>
+                    <input type="text" id="loginPhone" placeholder="999 888 77-66">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>🔑 Пароль</label>
+                <input type="password" id="loginPassword" placeholder="Введите пароль">
+            </div>
+            <button class="btn-primary" onclick="loginUser()">ВОЙТИ →</button>
+            <button class="btn-link" onclick="showRecovery()">🔓 Забыли пароль?</button>
+        </div>
+
+        <div id="registerForm" style="display:none;">
+            <div class="input-group">
+                <label>👤 Имя</label>
+                <input type="text" id="regName" placeholder="Ваше имя">
+            </div>
+            <div class="input-group">
+                <label>📞 Телефон</label>
+                <div class="phone-display">
+                    <span class="phone-code">+7</span>
+                    <input type="text" id="regPhone" placeholder="999 888 77-66">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>🔑 Пароль</label>
+                <input type="password" id="regPassword" placeholder="Минимум 4 символа">
+            </div>
+            <button class="btn-primary" onclick="registerUser()">ЗАРЕГИСТРИРОВАТЬСЯ →</button>
+        </div>
+
+        <div id="recoveryForm" style="display:none;">
+            <div class="recovery-info">📌 Введите номер телефона, чтобы увидеть пароль.</div>
+            <div class="input-group">
+                <label>📞 Телефон</label>
+                <div class="phone-display">
+                    <span class="phone-code">+7</span>
+                    <input type="text" id="recoveryPhone" placeholder="999 888 77-66">
+                </div>
+            </div>
+            <button class="btn-primary" onclick="recoverPassword()">🔍 ПОКАЗАТЬ ПАРОЛЬ</button>
+            <button class="btn-link" onclick="backToLogin()">◀️ Назад</button>
+        </div>
+    </div>
+</div>
+
+<div id="app" style="display:none;">
+
+    <div class="header">
+        <div class="logo"><span class="logo-icon">🍕</span> Вкусный Мир</div>
+        <div class="header-actions">
+            <button class="header-btn" onclick="switchPage('profile')" id="userNameHeader">👤 Гость</button>
+            <button class="header-btn" onclick="switchPage('cart')">🛒 <span class="cart-count" id="cartCount">0</span></button>
+        </div>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" placeholder="🔍 Поиск блюд..." id="searchInput" oninput="searchProducts(this.value)">
+    </div>
+
+    <div class="categories" id="categoriesContainer"></div>
+    <div class="products-list" id="productsContainer"></div>
+
+    <div id="cartPage" class="page">
+        <div class="page-title">🛒 Корзина</div>
+        <div id="cartItems"></div>
+        <div id="cartTotal" class="cart-total"></div>
+        <button class="btn-primary" onclick="checkout()">✅ Оформить заказ</button>
+        <div style="margin-top:16px;">
+            <h3 style="font-size:14px; margin-bottom:6px;">🔥 Популярное</h3>
+            <div class="product-card" onclick="addPopular('Такос Классический', 295)" style="cursor:pointer;">
+                <span>🌮 Такос Классический</span>
+                <span style="color:#f472b6; font-weight:700;">295 ₽</span>
+            </div>
+            <div class="product-card" onclick="addPopular('Такос мясной', 365)" style="cursor:pointer; margin-top:6px;">
+                <span>🌮 Такос мясной</span>
+                <span style="color:#f472b6; font-weight:700;">365 ₽</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="profilePage" class="page">
+        <div class="page-title">👤 Профиль</div>
+        <div class="profile-card">
+            <div class="avatar">👤</div>
+            <div class="name" id="userNameDisplay">Гость</div>
+            <div class="phone" id="userPhoneDisplay">+7 (XXX) XXX-XX-XX</div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-item"><div class="stat-value" id="ordersStat">0</div><div class="stat-label">Заказов</div></div>
+            <div class="stat-item"><div class="stat-value" id="favStat">0</div><div class="stat-label">Избранное</div></div>
+            <div class="stat-item"><div class="stat-value" id="bonusStat">0</div><div class="stat-label">Бонусов</div></div>
+        </div>
+        <div class="loyalty-card">
+            <h3>⭐️ Программа лояльности</h3>
+            <p>Сделайте первый заказ</p>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%;"></div></div>
+            <div id="progressText">0/6 • до награды осталось 6</div>
+            <div style="font-weight:700; margin-top:6px;">Ваши бонусы: <span id="bonusDisplay">0</span> ₽</div>
+        </div>
+        <div>
+            <div class="menu-item" onclick="switchPage('orders')"><div class="left"><span>📋</span> Мои заказы</div><span>→</span></div>
+            <div class="menu-item" onclick="switchPage('favorites')"><div class="left"><span>❤️</span> Избранное</div><span>→</span></div>
+            <div class="menu-item admin-only" onclick="switchPage('admin')" id="adminMenuItem"><div class="left"><span>⚙️</span> Админ-панель</div><span>→</span></div>
+            <div class="menu-item" onclick="logout()"><div class="left"><span>🚪</span> Выйти</div><span>→</span></div>
+        </div>
+    </div>
+
+    <div id="ordersPage" class="page">
+        <div class="page-title">📋 Мои заказы</div>
+        <div id="ordersList"></div>
+    </div>
+
+    <div id="favoritesPage" class="page">
+        <div class="page-title">❤️ Избранное</div>
+        <div id="favoritesList"></div>
+    </div>
+
+    <div id="adminPage" class="page">
+        <div class="page-title">⚙️ Админ-панель</div>
+        <div class="stats-grid" style="margin-bottom:12px;">
+            <div class="stat-item"><div class="stat-value" id="adminTotalOrders">0</div><div class="stat-label">Заказов</div></div>
+            <div class="stat-item"><div class="stat-value" id="adminTotalRevenue">0</div><div class="stat-label">Выручка</div></div>
+            <div class="stat-item"><div class="stat-value" id="adminTotalUsers">0</div><div class="stat-label">Клиентов</div></div>
+        </div>
+        <div id="adminOrdersList"></div>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="switchPage('menu')"><span class="nav-icon">🍕</span> Меню</button>
+        <button class="nav-item" onclick="switchPage('favorites')"><span class="nav-icon">❤️</span> Избранное</button>
+        <button class="nav-item" onclick="switchPage('cart')"><span class="nav-icon">🛒</span> Корзина</button>
+        <button class="nav-item" onclick="switchPage('profile')"><span class="nav-icon">👤</span> Профиль</button>
+    </div>
+
+</div>
+
+<script>
+    function normalizePhone(phone) {
+        return phone.replace(/\D/g, '');
+    }
+
+    const PRODUCTS_DATA = {
+        pizza: [
+            { id: 1, name: 'Маргарита', desc: 'Томатный соус, моцарелла, базилик', price: 450, emoji: '🍕' },
+            { id: 2, name: 'Пепперони', desc: 'Томатный соус, пепперони, моцарелла', price: 550, emoji: '🍕' },
+            { id: 3, name: 'Четыре сыра', desc: 'Сливочный соус, 4 вида сыра', price: 600, emoji: '🧀' }
+        ],
+        burger: [
+            { id: 4, name: 'Классический', desc: 'Говяжья котлета, салат, помидор', price: 350, emoji: '🍔' },
+            { id: 5, name: 'Двойной', desc: 'Две котлеты, двойной сыр, бекон', price: 450, emoji: '🍔' }
+        ],
+        salad: [
+            { id: 6, name: 'Цезарь', desc: 'Курица, салат, сухарики, соус', price: 320, emoji: '🥗' },
+            { id: 7, name: 'Греческий', desc: 'Овощи, фета, оливки, масло', price: 280, emoji: '🥗' }
+        ],
+        drink: [
+            { id: 8, name: 'Кола', desc: '0.5л', price: 100, emoji: '🥤' },
+            { id: 9, name: 'Сок', desc: 'Апельсиновый, 0.3л', price: 120, emoji: '🧃' }
+        ],
+        tacos: [
+            { id: 10, name: 'Такос Классический', desc: 'Куриный', price: 295, emoji: '🌮' },
+            { id: 11, name: 'Такос мясной', desc: 'Мясной', price: 365, emoji: '🌮' }
+        ],
+        fries: [
+            { id: 12, name: 'Картофель фри', desc: 'Хрустящая картошка', price: 150, emoji: '🍟' }
+        ]
+    };
+
+    const CATEGORIES = [
+        { id: 'pizza', name: '🍕 Пицца' },
+        { id: 'burger', name: '🍔 Бургеры' },
+        { id: 'salad', name: '🥗 Салаты' },
+        { id: 'tacos', name: '🌮 Такос' },
+        { id: 'drink', name: '🥤 Напитки' }
+    ];
+
+    let state = {
+        user: null,
+        users: [],
+        cart: {},
+        favorites: [],
+        orders: [],
+        bonus: 0,
+        currentCategory: 'pizza',
+        isAdmin: false
+    };
+
+    function loadState() {
+        try {
+            const saved = localStorage.getItem('restaurant_app_state');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                state = { ...state, ...parsed };
+            }
+            
+            const adminExists = state.users.find(u => u.id === 9999);
+            if (!adminExists) {
+                state.users.push({
+                    id: 9999,
+                    name: 'Admin',
+                    phone: '9998887766',
+                    password: 'admin123'
+                });
+                saveState();
+            }
+            
+            if (state.user && state.user.id === 9999) {
+                state.isAdmin = true;
+                document.getElementById('adminMenuItem').style.display = 'flex';
+                document.body.classList.add('is-admin');
+            }
+        } catch (e) { console.warn('⚠️ Ошибка загрузки:', e); }
+    }
+
+    function saveState() {
+        try {
+            localStorage.setItem('restaurant_app_state', JSON.stringify(state));
+        } catch (e) { console.warn('⚠️ Ошибка сохранения:', e); }
+    }
+
+    function switchAuthTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        if (tab === 'login') {
+            document.querySelector('.auth-tab[data-tab="login"]').classList.add('active');
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('recoveryForm').style.display = 'none';
+        } else {
+            document.querySelector('.auth-tab[data-tab="register"]').classList.add('active');
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('recoveryForm').style.display = 'none';
+        }
+    }
+
+    function showRecovery() {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('recoveryForm').style.display = 'block';
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    }
+
+    function backToLogin() {
+        document.getElementById('recoveryForm').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+        document.querySelector('.auth-tab[data-tab="login"]').classList.add('active');
+    }
+
+    function recoverPassword() {
+        const phone = document.getElementById('recoveryPhone').value.trim();
+        if (!phone) { alert('Введите номер телефона!'); return; }
+        const phoneDigits = normalizePhone(phone);
+        if (phoneDigits.length < 10) { alert('Введите корректный телефон (10 цифр)!'); return; }
+
+        const found = state.users.find(u => normalizePhone(u.phone) === phoneDigits);
+        if (!found) {
+            alert('❌ Пользователь с таким номером не найден!');
+            return;
+        }
+
+        alert('🔓 Ваш пароль: ' + found.password);
+        backToLogin();
+    }
+
+    function registerUser() {
+        const name = document.getElementById('regName').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+        const password = document.getElementById('regPassword').value;
+        
+        if (!name) { alert('Введите имя!'); return; }
+        if (!phone) { alert('Введите телефон!'); return; }
+        const phoneDigits = normalizePhone(phone);
+        if (phoneDigits.length < 10) { alert('Введите корректный телефон (10 цифр)!'); return; }
+        if (!password || password.length < 4) { alert('Пароль минимум 4 символа!'); return; }
+
+        if (state.users.find(u => normalizePhone(u.phone) === phoneDigits)) {
+            alert('Пользователь с таким номером уже существует! Войдите.');
+            return;
+        }
+
+        const newUser = {
+            id: Date.now(),
+            name: name,
+            phone: phoneDigits,
+            password: password
+        };
+        state.users.push(newUser);
+        state.user = newUser;
+        saveState();
+        enterApp();
+    }
+
+    function loginUser() {
+        const phone = document.getElementById('loginPhone').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!phone) { alert('Введите телефон!'); return; }
+        if (!password) { alert('Введите пароль!'); return; }
+
+        const phoneDigits = normalizePhone(phone);
+        const found = state.users.find(u => normalizePhone(u.phone) === phoneDigits && u.password === password);
+        
+        if (!found) {
+            const userExists = state.users.find(u => normalizePhone(u.phone) === phoneDigits);
+            if (userExists) {
+                alert('❌ Неверный пароль!');
+            } else {
+                alert('❌ Пользователь с таким номером не найден!');
+            }
+            return;
+        }
+
+        state.user = found;
+        
+        if (found.id === 9999) {
+            state.isAdmin = true;
+            document.getElementById('adminMenuItem').style.display = 'flex';
+            document.body.classList.add('is-admin');
+        } else {
+            state.isAdmin = false;
+        }
+        
+        saveState();
+        enterApp();
+    }
+
+    function logout() {
+        if (!confirm('Выйти из аккаунта?')) return;
+        state.user = null;
+        state.isAdmin = false;
+        document.getElementById('adminMenuItem').style.display = 'none';
+        document.body.classList.remove('is-admin');
+        saveState();
+        location.reload();
+    }
+
+    function enterApp() {
+        document.getElementById('authPage').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('userNameHeader').innerHTML = '👤 ' + state.user.name;
+        renderAll();
+        switchPage('menu');
+    }
+
+    function addToCart(id, name, price) {
+        if (state.cart[id]) { state.cart[id].quantity++; }
+        else { state.cart[id] = { id, name, price, quantity: 1 }; }
+        saveState();
+        updateCartCount();
+        renderProducts(state.currentCategory);
+    }
+
+    function removeFromCart(id) {
+        if (state.cart[id]) {
+            state.cart[id].quantity--;
+            if (state.cart[id].quantity <= 0) delete state.cart[id];
+            saveState();
+            updateCartCount();
+            renderProducts(state.currentCategory);
+            if (document.getElementById('cartPage').classList.contains('active')) renderCartPage();
+        }
+    }
+
+    function updateCartCount() {
+        const count = Object.values(state.cart).reduce((s, i) => s + i.quantity, 0);
+        document.getElementById('cartCount').innerText = count;
+    }
+
+    function getTotal() {
+        return Object.values(state.cart).reduce((s, i) => s + i.price * i.quantity, 0);
+    }
+
+    function toggleFavorite(id) {
+        const idx = state.favorites.indexOf(id);
+        if (idx > -1) { state.favorites.splice(idx, 1); }
+        else { state.favorites.push(id); }
+        saveState();
+        renderProducts(state.currentCategory);
+        if (document.getElementById('favoritesPage').classList.contains('active')) renderFavoritesPage();
+    }
+
+    function isFavorite(id) {
+        return state.favorites.includes(id);
+    }
+
+    function addPopular(name, price) {
+        const id = Date.now() + Math.random();
+        addToCart(id, name, price);
+        alert('✅ ' + name + ' добавлен в корзину!');
+        renderCartPage();
+    }
+
+    function renderCategories() {
+        const container = document.getElementById('categoriesContainer');
+        container.innerHTML = '';
+        CATEGORIES.forEach((cat, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'category-btn' + (i === 0 ? ' active' : '');
+            btn.innerText = cat.name;
+            btn.dataset.cat = cat.id;
+            btn.onclick = () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentCategory = cat.id;
+                renderProducts(cat.id);
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function renderProducts(categoryId) {
+        const container = document.getElementById('productsContainer');
+        const items = PRODUCTS_DATA[categoryId] || [];
+        if (items.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">🍽️</div><p>Товаров в этой категории пока нет</p></div>';
+            return;
+        }
+        container.innerHTML = '';
+        items.forEach(p => {
+            const qty = state.cart[p.id]?.quantity || 0;
+            const fav = isFavorite(p.id);
+            const div = document.createElement('div');
+            div.className = 'product-card';
+            div.innerHTML = `
+                <div class="product-info">
+                    <div class="product-name">${p.emoji} ${p.name}</div>
+                    <div class="product-desc">${p.desc || ''}</div>
+                    <div class="product-price">${p.price} ₽</div>
+                </div>
+                <div class="product-actions">
+                    <button class="icon-btn ${fav ? 'fav-active' : ''}" onclick="toggleFavorite(${p.id})">${fav ? '❤️' : '🤍'}</button>
+                    ${qty > 0 ? `<button class="qty-btn remove" onclick="removeFromCart(${p.id})">−</button>` : ''}
+                    ${qty > 0 ? `<span class="qty-text">${qty}</span>` : ''}
+                    <button class="qty-btn" onclick="addToCart(${p.id}, '${p.name}', ${p.price})">+</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function renderCartPage() {
+        const container = document.getElementById('cartItems');
+        const items = Object.values(state.cart);
+        if (items.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">🛒</div><h3>Корзина пуста</h3><p>Добавьте блюда из меню</p></div>';
+            document.getElementById('cartTotal').innerText = '';
+            return;
+        }
+        let html = '', total = 0;
+        items.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+            html += `
+                <div class="cart-item">
+                    <div>
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">${item.price} ₽</div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="qty-btn remove" onclick="removeFromCart(${item.id})">−</button>
+                        <span class="qty-text">${item.quantity}</span>
+                        <button class="qty-btn" onclick="addToCart(${item.id}, '${item.name}', ${item.price})">+</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        document.getElementById('cartTotal').innerText = 'Итого: ' + total + ' ₽';
+    }
+
+    function renderProfile() {
+        const user = state.user || { name: 'Гость', phone: '+7 (XXX) XXX-XX-XX' };
+        document.getElementById('userNameDisplay').innerText = user.name;
+        document.getElementById('userPhoneDisplay').innerText = user.phone;
+        document.getElementById('ordersStat').innerText = state.orders.length;
+        document.getElementById('favStat').innerText = state.favorites.length;
+        document.getElementById('bonusStat').innerText = state.bonus;
+        document.getElementById('bonusDisplay').innerText = state.bonus;
+        const progress = Math.min((state.orders.length / 6) * 100, 100);
+        document.getElementById('progressFill').style.width = progress + '%';
+        document.getElementById('progressText').innerText = state.orders.length + '/6 • до награды осталось ' + Math.max(0, 6 - state.orders.length);
+    }
+
+    function renderOrders() {
+        const container = document.getElementById('ordersList');
+        if (state.orders.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><h3>У вас пока нет заказов</h3></div>';
+            return;
+        }
+        let html = '';
+        state.orders.slice().reverse().forEach(o => {
+            const statusMap = { 'new': '🟡 Новый', 'accepted': '🔵 Принят', 'ready': '🟢 Готов', 'completed': '✅ Выполнен', 'cancelled': '❌ Отменен' };
+            html += `
+                <div class="admin-card">
+                    <div style="display:flex;justify-content:space-between;font-weight:bold;">
+                        <span>📋 Заказ #${o.id}</span>
+                        <span>${o.date}</span>
+                    </div>
+                    <div style="color:#6b7280;font-size:14px;margin:6px 0;">${o.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
+                    <div style="font-weight:bold;color:#f472b6;">💰 ${o.total} ₽</div>
+                    <div style="margin-top:6px;"><span class="status-badge status-${o.status}">${statusMap[o.status]}</span></div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function renderFavoritesPage() {
+        const container = document.getElementById('favoritesList');
+        if (state.favorites.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">❤️</div><h3>Избранное</h3><p>0 позиций</p></div>';
+            return;
+        }
+        let html = '';
+        state.favorites.forEach(id => {
+            let p = null;
+            for (let cat in PRODUCTS_DATA) {
+                p = PRODUCTS_DATA[cat].find(x => x.id === id);
+                if (p) break;
+            }
+            if (p) {
+                html += `
+                    <div class="product-card">
+                        <div class="product-info">
+                            <div class="product-name">${p.emoji} ${p.name}</div>
+                            <div class="product-price">${p.price} ₽</div>
+                        </div>
+                        <div class="product-actions">
+                            <button class="icon-btn fav-active" onclick="toggleFavorite(${p.id}); renderFavoritesPage();">❤️</button>
+                            <button class="qty-btn" onclick="addToCart(${p.id}, '${p.name}', ${p.price}); renderFavoritesPage();">+</button>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        container.innerHTML = html;
+    }
+
+    function renderAdminPanel() {
+        if (!state.isAdmin) {
+            document.getElementById('adminPage').innerHTML = '<div class="empty-state"><div class="empty-icon">⛔</div><h3>Нет доступа</h3><p>Только для администраторов</p></div>';
+            return;
+        }
+        const totalOrders = state.orders.length;
+        const totalRevenue = state.orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + o.total, 0);
+        document.getElementById('adminTotalOrders').innerText = totalOrders;
+        document.getElementById('adminTotalRevenue').innerText = totalRevenue + ' ₽';
+        document.getElementById('adminTotalUsers').innerText = state.users.length;
+
+        const container = document.getElementById('adminOrdersList');
+        if (state.orders.length === 0) {
+            container.innerHTML = '<div class="empty-state"><p>Заказов пока нет</p></div>';
+            return;
+        }
+        let html = '';
+        state.orders.slice().reverse().forEach(o => {
+            const statusMap = { 'new': '🟡 Новый', 'accepted': '🔵 Принят', 'ready': '🟢 Готов', 'completed': '✅ Выполнен', 'cancelled': '❌ Отменен' };
+            html += `
+                <div class="admin-card">
+                    <div style="display:flex;justify-content:space-between;font-weight:bold;">
+                        <span>📋 Заказ #${o.id}</span>
+                        <span>${o.date}</span>
+                    </div>
+                    <div style="color:#6b7280;font-size:14px;margin:6px 0;">${o.items.map(i => `${i.name} x${i.quantity}`).join(', ')}</div>
+                    <div style="font-weight:bold;color:#f472b6;">💰 ${o.total} ₽</div>
+                    <div style="margin:6px 0;"><span class="status-badge status-${o.status}">${statusMap[o.status]}</span></div>
+                    <div class="admin-actions">
+                        <button class="accept" onclick="updateOrderStatus(${o.id}, 'accepted')">✅ Принять</button>
+                        <button class="ready" onclick="updateOrderStatus(${o.id}, 'ready')">🍳 Готов</button>
+                        <button class="complete" onclick="updateOrderStatus(${o.id}, 'completed')">🏁 Выполнен</button>
+                        <button class="cancel" onclick="updateOrderStatus(${o.id}, 'cancelled')">❌ Отмена</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function updateOrderStatus(id, status) {
+        const order = state.orders.find(o => o.id === id);
+        if (order) {
+            order.status = status;
+            saveState();
+            renderAdminPanel();
+            alert('✅ Статус заказа #' + id + ' обновлен');
+        }
+    }
+
+    function renderAll() {
+        renderCategories();
+        renderProducts(state.currentCategory);
+        updateCartCount();
+        renderProfile();
+        renderOrders();
+        renderFavoritesPage();
+        renderAdminPanel();
+    }
+
+    function checkout() {
+        if (Object.keys(state.cart).length === 0) {
+            alert('Корзина пуста!');
+            return;
+        }
+        const items = Object.values(state.cart);
+        const total = getTotal();
+        const order = {
+            id: Date.now(),
+            items: items.map(i => ({ name: i.name, quantity: i.quantity })),
+            total: total,
+            status: 'new',
+            date: new Date().toLocaleString()
+        };
+        state.orders.push(order);
+        const earned = Math.floor(total * 0.05);
+        state.bonus += earned;
+        state.cart = {};
+        saveState();
+        updateCartCount();
+        alert('✅ Заказ #' + order.id + ' принят!\nСумма: ' + total + ' ₽\nБонусов: ' + earned);
+        renderAll();
+        switchPage('profile');
+    }
+
+    function switchPage(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+        const pageMap = {
+            'menu': { pageId: 'menuPage', navIdx: 0 },
+            'favorites': { pageId: 'favoritesPage', navIdx: 1 },
+            'cart': { pageId: 'cartPage', navIdx: 2 },
+            'profile': { pageId: 'profilePage', navIdx: 3 },
+            'orders': { pageId: 'ordersPage', navIdx: 3 },
+            'admin': { pageId: 'adminPage', navIdx: 3 }
+        };
+
+        const target = pageMap[page];
+        if (!target) return;
+        document.getElementById(target.pageId).classList.add('active');
+
+        const isMenu = page === 'menu';
+        document.querySelector('.search-bar').style.display = isMenu ? 'block' : 'none';
+        document.querySelector('.categories').style.display = isMenu ? 'flex' : 'none';
+        document.querySelector('.products-list').style.display = isMenu ? 'flex' : 'none';
+
+        const navItems = document.querySelectorAll('.nav-item');
+        if (navItems[target.navIdx]) navItems[target.navIdx].classList.add('active');
+
+        if (page === 'cart') renderCartPage();
+        else if (page === 'profile') renderProfile();
+        else if (page === 'orders') renderOrders();
+        else if (page === 'favorites') renderFavoritesPage();
+        else if (page === 'admin') renderAdminPanel();
+    }
+
+    function searchProducts(query) {
+        if (!query || query.length < 2) {
+            renderProducts(state.currentCategory);
+            return;
+        }
+        const all = [];
+        for (let cat in PRODUCTS_DATA) all.push(...PRODUCTS_DATA[cat]);
+        const filtered = all.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+        const container = document.getElementById('productsContainer');
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>Ничего не найдено</p></div>';
+            return;
+        }
+        container.innerHTML = '';
+        filtered.forEach(p => {
+            const qty = state.cart[p.id]?.quantity || 0;
+            const fav = isFavorite(p.id);
+            const div = document.createElement('div');
+            div.className = 'product-card';
+            div.innerHTML = `
+                <div class="product-info">
+                    <div class="product-name">${p.emoji} ${p.name}</div>
+                    <div class="product-price">${p.price} ₽</div>
+                </div>
+                <div class="product-actions">
+                    <button class="icon-btn ${fav ? 'fav-active' : ''}" onclick="toggleFavorite(${p.id})">${fav ? '❤️' : '🤍'}</button>
+                    ${qty > 0 ? `<button class="qty-btn remove" onclick="removeFromCart(${p.id})">−</button>` : ''}
+                    ${qty > 0 ? `<span class="qty-text">${qty}</span>` : ''}
+                    <button class="qty-btn" onclick="addToCart(${p.id}, '${p.name}', ${p.price})">+</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    loadState();
+
+    if (state.user) {
+        document.getElementById('authPage').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('userNameHeader').innerHTML = '👤 ' + state.user.name;
+        if (state.user.id === 9999) {
+            state.isAdmin = true;
+            document.getElementById('adminMenuItem').style.display = 'flex';
+            document.body.classList.add('is-admin');
+        }
+        renderAll();
+        switchPage('menu');
+    } else {
+        document.getElementById('authPage').style.display = 'flex';
+        document.getElementById('app').style.display = 'none';
+    }
+
+    try {
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+    } catch (e) {}
+
+    console.log('🍕 Вкусный Мир загружен!');
+</script>
+</body>
+</html>
+\# 🍔 X — Приложение для заказа еды
+
+
+
+\## 📱 О проекте
+
+Современное приложение для заказа еды с интуитивным интерфейсом и программой лояльности.
+
+
+
+\## 🛠 Технологии
+
+\- Telegram WebApp
+
+\- HTML5 / CSS3 / JavaScript
+
+\- FastAPI (бэкенд)
+
+\- PostgreSQL (база данных)
+
+\- Docker + Nginx (деплой)
+
+
+
+\## 📂 Структура
+
+X\_APP/
+
+├── index.html
+
+
+
+
+
+\## 🚀 Запуск
+
+Просто откройте `index.html` в браузере.
+
+
+
+\## 👤 Разработчик
+
+\*\*X\*\*
+
+
+
+\## 📅 Версия
+
+1.0.0
+

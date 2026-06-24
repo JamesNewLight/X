@@ -427,6 +427,33 @@
         }
         .phone-display input:focus { box-shadow: none; }
 
+        /* ===== СТИЛИ ДЛЯ СОГЛАШЕНИЯ ===== */
+        .agree-block {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .agree-block input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            accent-color: #f472b6;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .agree-block label {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.3;
+            cursor: pointer;
+        }
+        .agree-block label a {
+            color: #f472b6;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
         @media (max-width: 480px) {
             .auth-card { padding: 20px 16px; }
             .product-card { padding: 10px 12px; }
@@ -439,6 +466,7 @@
 </head>
 <body>
 
+<!-- ===== АВТОРИЗАЦИЯ ===== -->
 <div id="authPage" class="auth-page">
     <div class="auth-card">
         <div class="logo-big">🍕</div>
@@ -466,6 +494,7 @@
             <button class="btn-link" onclick="showRecovery()">🔓 Забыли пароль?</button>
         </div>
 
+        <!-- ===== ФОРМА РЕГИСТРАЦИИ С СОГЛАШЕНИЕМ ===== -->
         <div id="registerForm" style="display:none;">
             <div class="input-group">
                 <label>👤 Имя</label>
@@ -482,6 +511,15 @@
                 <label>🔑 Пароль</label>
                 <input type="password" id="regPassword" placeholder="Минимум 4 символа">
             </div>
+
+            <!-- ===== ЧЕКБОКС СОГЛАШЕНИЯ ===== -->
+            <div class="agree-block">
+                <input type="checkbox" id="regAgree">
+                <label for="regAgree">
+                    Я принимаю <a href="#" onclick="openTerms()">пользовательское соглашение</a>
+                </label>
+            </div>
+
             <button class="btn-primary" onclick="registerUser()">ЗАРЕГИСТРИРОВАТЬСЯ →</button>
         </div>
 
@@ -500,6 +538,7 @@
     </div>
 </div>
 
+<!-- ===== ОСНОВНОЕ ПРИЛОЖЕНИЕ ===== -->
 <div id="app" style="display:none;">
 
     <div class="header">
@@ -591,6 +630,42 @@
 
 </div>
 
+<!-- ===== МОДАЛЬНОЕ ОКНО СОГЛАШЕНИЯ ===== -->
+<div id="termsModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:24px; padding:24px; max-width:420px; max-height:80vh; overflow-y:auto; width:100%;">
+        <h3 style="margin-bottom:12px; color:#831843;">📄 Пользовательское соглашение</h3>
+        <div style="font-size:14px; line-height:1.7; color:#333;">
+
+            <p><strong>1. Общие положения</strong></p>
+            <p>Настоящее Пользовательское соглашение (далее — Соглашение) регулирует отношения между X (далее — Сервис) и Пользователем.</p>
+
+            <p><strong>2. Условия использования</strong></p>
+            <p>2.1. Пользователь обязуется предоставлять достоверные данные.</p>
+            <p>2.2. Пользователь несет ответственность за сохранность пароля.</p>
+            <p>2.3. Сервис не несет ответственности за задержки доставки.</p>
+
+            <p><strong>3. Персональные данные</strong></p>
+            <p>3.1. Пользователь дает согласие на обработку персональных данных.</p>
+            <p>3.2. Данные используются только для обработки заказов.</p>
+
+            <p><strong>4. Права и обязанности</strong></p>
+            <p>4.1. Сервис обязуется обрабатывать заказы в течение 24 часов.</p>
+            <p>4.2. Пользователь обязуется оплачивать заказы в соответствии с ценами.</p>
+
+            <p><strong>5. Ответственность</strong></p>
+            <p>5.1. Сервис не несет ответственности за качество товаров.</p>
+            <p>5.2. Пользователь проверяет заказ при получении.</p>
+
+            <p><strong>6. Принятие условий</strong></p>
+            <p>Используя Сервис, Пользователь автоматически соглашается с условиями данного Соглашения.</p>
+
+        </div>
+        <button onclick="closeTerms()" style="margin-top:16px; padding:12px 24px; background:linear-gradient(135deg, #f472b6, #be185d); color:white; border:none; border-radius:30px; cursor:pointer; font-weight:600; width:100%; font-size:15px;">
+            ✅ Принимаю
+        </button>
+    </div>
+</div>
+
 <script>
     function normalizePhone(phone) {
         return phone.replace(/\D/g, '');
@@ -649,7 +724,7 @@
                 const parsed = JSON.parse(saved);
                 state = { ...state, ...parsed };
             }
-            
+
             const adminExists = state.users.find(u => u.id === 9999);
             if (!adminExists) {
                 state.users.push({
@@ -660,7 +735,7 @@
                 });
                 saveState();
             }
-            
+
             if (state.user && state.user.id === 9999) {
                 state.isAdmin = true;
                 document.getElementById('adminMenuItem').style.display = 'flex';
@@ -719,11 +794,40 @@
         backToLogin();
     }
 
+    // ===== ФУНКЦИИ ДЛЯ СОГЛАШЕНИЯ =====
+    function openTerms() {
+        document.getElementById('termsModal').style.display = 'flex';
+    }
+
+    function closeTerms() {
+        document.getElementById('termsModal').style.display = 'none';
+    }
+
+    // Закрытие по клику на фон
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('termsModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeTerms();
+                }
+            });
+        }
+    });
+
+    // ===== РЕГИСТРАЦИЯ С ПРОВЕРКОЙ СОГЛАШЕНИЯ =====
     function registerUser() {
         const name = document.getElementById('regName').value.trim();
         const phone = document.getElementById('regPhone').value.trim();
         const password = document.getElementById('regPassword').value;
-        
+        const agree = document.getElementById('regAgree').checked; // ДОБАВЛЕНО
+
+        // ===== ПРОВЕРКА СОГЛАШЕНИЯ =====
+        if (!agree) {
+            alert('Примите пользовательское соглашение!');
+            return;
+        }
+
         if (!name) { alert('Введите имя!'); return; }
         if (!phone) { alert('Введите телефон!'); return; }
         const phoneDigits = normalizePhone(phone);
@@ -750,13 +854,13 @@
     function loginUser() {
         const phone = document.getElementById('loginPhone').value.trim();
         const password = document.getElementById('loginPassword').value;
-        
+
         if (!phone) { alert('Введите телефон!'); return; }
         if (!password) { alert('Введите пароль!'); return; }
 
         const phoneDigits = normalizePhone(phone);
         const found = state.users.find(u => normalizePhone(u.phone) === phoneDigits && u.password === password);
-        
+
         if (!found) {
             const userExists = state.users.find(u => normalizePhone(u.phone) === phoneDigits);
             if (userExists) {
@@ -768,7 +872,7 @@
         }
 
         state.user = found;
-        
+
         if (found.id === 9999) {
             state.isAdmin = true;
             document.getElementById('adminMenuItem').style.display = 'flex';
@@ -776,7 +880,7 @@
         } else {
             state.isAdmin = false;
         }
-        
+
         saveState();
         enterApp();
     }
@@ -1171,9 +1275,12 @@
 
     console.log('🍕 Вкусный Мир загружен!');
 </script>
-</body>
+
+<!-- ===== ФУТЕР ===== -->
 <div style="text-align: center; padding: 24px 16px 30px; font-size: 13px; color: #b0b0b0; background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); border-top: 2px solid #fbcfe8;">
     <span style="font-weight: 600; color: #be185d;">✨</span> 
     Разработано командой <span style="font-weight: 700; color: #be185d;">Xistar</span>. 2026
 </div>
+
+</body>
 </html>

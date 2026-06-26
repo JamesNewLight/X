@@ -367,62 +367,26 @@
         .status-completed { background: #e0e7ff; color: #3730a3; }
         .status-cancelled { background: #fee2e2; color: #991b1b; }
 
-        .phone-display {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #fafafa;
-            padding: 12px 16px;
-            border-radius: 14px;
-            border: 1px solid #e5e7eb;
-        }
-        .phone-display .phone-code {
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .phone-display input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 0;
-            font-size: 14px;
-            outline: none;
-            min-width: 0;
-            width: 100%;
-        }
-        .phone-display input:focus { box-shadow: none; }
-
         @media (max-width: 480px) {
             .auth-card { padding: 24px 16px; }
             .product-card { padding: 10px 12px; }
             .profile-card { padding: 16px; }
-            .phone-display { padding: 10px 12px; }
-            .phone-display .phone-code { font-size: 13px; }
-            .phone-display input { font-size: 13px; }
             .product-img { width: 40px; height: 40px; font-size: 22px; }
         }
     </style>
 </head>
 <body>
 
-<!-- ===== СТРАНИЦА ВХОДА (ТОЛЬКО ТГ) ===== -->
+<!-- ===== СТРАНИЦА ВХОДА ===== -->
 <div id="authPage" class="auth-page">
     <div class="auth-card">
         <div class="logo-big">🍕</div>
         <h2>Вкусный Мир</h2>
         <p class="sub">Войдите через Telegram</p>
-        
         <button class="tg-login-btn" onclick="loginWithTelegram()">
             <span class="tg-icon">🤖</span>
             Войти через Telegram
         </button>
-        
-        <div style="margin-top:16px; font-size:12px; color:#ccc;">
-            <p>Для входа используйте аккаунт Telegram</p>
-        </div>
     </div>
 </div>
 
@@ -529,7 +493,7 @@
 </div>
 
 <script>
-    // ===== ДАННЫЕ ТОВАРОВ =====
+    // ===== ДАННЫЕ =====
     const PRODUCTS_DATA = {
         pizza: [
             { id: 1, name: 'Маргарита', desc: 'Томатный соус, моцарелла, базилик', price: 450, emoji: '🍕', photo: '' },
@@ -565,7 +529,6 @@
         { id: 'drink', name: '🥤 Напитки' }
     ];
 
-    // ===== СОСТОЯНИЕ =====
     let state = {
         user: null,
         users: [],
@@ -600,11 +563,14 @@
             const tg = window.Telegram.WebApp;
             const user = tg.initDataUnsafe?.user;
             
+            console.log('Telegram user:', user);
+            
             if (!user) {
-                alert('❌ Не удалось получить данные из Telegram. Откройте приложение через бота.');
+                alert('❌ Откройте приложение через бота! Нажмите кнопку меню в Telegram.');
                 return;
             }
             
+            // Ищем пользователя
             let existingUser = state.users.find(u => u.id === user.id);
             
             if (!existingUser) {
@@ -620,6 +586,7 @@
                 state.user = existingUser;
             }
             
+            // Проверка админа
             if (user.id === 5140927230) {
                 state.isAdmin = true;
                 document.getElementById('adminMenuItem').style.display = 'flex';
@@ -630,47 +597,27 @@
             enterApp();
             
         } catch (e) {
-            console.error('Ошибка входа через Telegram:', e);
+            console.error('Ошибка входа:', e);
             alert('❌ Ошибка входа. Попробуйте ещё раз.');
         }
     }
 
-    // ===== АВТОМАТИЧЕСКИЙ ВХОД =====
-    function autoLogin() {
+    function enterApp() {
+        document.getElementById('authPage').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('userNameHeader').innerHTML = '👤 ' + state.user.name;
+        
+        // Аватар
         try {
             const tg = window.Telegram.WebApp;
             const user = tg.initDataUnsafe?.user;
-            
-            if (user) {
-                let existingUser = state.users.find(u => u.id === user.id);
-                
-                if (!existingUser) {
-                    const newUser = {
-                        id: user.id,
-                        name: user.first_name || 'Гость',
-                        phone: user.phone_number || '—',
-                        isTelegram: true
-                    };
-                    state.users.push(newUser);
-                    state.user = newUser;
-                } else {
-                    state.user = existingUser;
-                }
-                
-                if (user.id === 5140927230) {
-                    state.isAdmin = true;
-                    document.getElementById('adminMenuItem').style.display = 'flex';
-                    document.body.classList.add('is-admin');
-                }
-                
-                saveState();
-                enterApp();
-                return true;
+            if (user?.photo_url) {
+                document.getElementById('userAvatar').innerHTML = `<img src="${user.photo_url}" alt="avatar">`;
             }
-        } catch (e) {
-            console.warn('Автовход не сработал:', e);
-        }
-        return false;
+        } catch(e) {}
+        
+        renderAll();
+        switchPage('menu');
     }
 
     function logout() {
@@ -682,25 +629,6 @@
         saveState();
         document.getElementById('authPage').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
-        location.reload();
-    }
-
-    function enterApp() {
-        document.getElementById('authPage').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-        document.getElementById('userNameHeader').innerHTML = '👤 ' + state.user.name;
-        
-        // Аватар из Telegram
-        try {
-            const tg = window.Telegram.WebApp;
-            const user = tg.initDataUnsafe?.user;
-            if (user?.photo_url) {
-                document.getElementById('userAvatar').innerHTML = `<img src="${user.photo_url}" alt="avatar">`;
-            }
-        } catch(e) {}
-        
-        renderAll();
-        switchPage('menu');
     }
 
     // ===== КОРЗИНА =====
@@ -989,7 +917,6 @@
         updateCartCount();
         alert('✅ Заказ #' + order.id + ' принят!\nСумма: ' + total + ' ₽\nБонусов: ' + earned);
         
-        // Отправка в Telegram бота
         try {
             const tg = window.Telegram.WebApp;
             if (tg) {
@@ -1080,8 +1007,10 @@
     // ===== ИНИЦИАЛИЗАЦИЯ =====
     loadState();
 
-    // Пытаемся войти автоматически
-    if (!autoLogin()) {
+    // Проверяем, есть ли уже пользователь
+    if (state.user) {
+        enterApp();
+    } else {
         document.getElementById('authPage').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
     }

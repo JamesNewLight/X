@@ -109,6 +109,9 @@
         .product-name { font-weight: 600; font-size: 15px; color: #831843; }
         .product-desc { font-size: 12px; color: #999; margin-top: 1px; }
         .product-price { font-weight: 700; color: #f472b6; font-size: 16px; margin-top: 2px; }
+        .product-img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; margin-right: 12px; background: #fce7f3; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+        .product-img img { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; }
+        .product-content { display: flex; align-items: center; flex: 1; }
         .product-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
         .icon-btn {
             background: none;
@@ -292,7 +295,20 @@
             text-align: center;
             margin-bottom: 16px;
         }
-        .profile-card .avatar { font-size: 40px; }
+        .profile-card .avatar { 
+            width: 70px; 
+            height: 70px; 
+            border-radius: 50%; 
+            margin: 0 auto 10px;
+            overflow: hidden;
+            border: 3px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            background: rgba(255,255,255,0.2);
+        }
+        .profile-card .avatar img { width: 100%; height: 100%; object-fit: cover; }
         .profile-card .name { font-size: 18px; font-weight: 700; }
         .profile-card .phone { opacity: 0.8; font-size: 13px; margin-top: 2px; }
         .stats-grid {
@@ -427,7 +443,6 @@
         }
         .phone-display input:focus { box-shadow: none; }
 
-        /* ===== СОГЛАШЕНИЕ (исправлено) ===== */
         .agree-block {
             display: flex;
             align-items: center;
@@ -467,6 +482,7 @@
             .phone-display input { font-size: 13px; }
             .agree-block { margin: 12px 0 14px 0; }
             .agree-block label { font-size: 12px; }
+            .product-img { width: 40px; height: 40px; font-size: 22px; }
         }
     </style>
 </head>
@@ -500,7 +516,6 @@
             <button class="btn-link" onclick="showRecovery()">🔓 Забыли пароль?</button>
         </div>
 
-        <!-- ===== ФОРМА РЕГИСТРАЦИИ С СОГЛАШЕНИЕМ ===== -->
         <div id="registerForm" style="display:none;">
             <div class="input-group">
                 <label>👤 Имя</label>
@@ -517,15 +532,12 @@
                 <label>🔑 Пароль</label>
                 <input type="password" id="regPassword" placeholder="Минимум 4 символа">
             </div>
-
-            <!-- ===== ЧЕКБОКС СОГЛАШЕНИЯ (исправлен) ===== -->
             <div class="agree-block">
                 <input type="checkbox" id="regAgree">
                 <label for="regAgree">
                     Я принимаю <a href="#" onclick="openTerms()">пользовательское соглашение</a>
                 </label>
             </div>
-
             <button class="btn-primary" onclick="registerUser()">ЗАРЕГИСТРИРОВАТЬСЯ →</button>
         </div>
 
@@ -570,12 +582,22 @@
         <div style="margin-top:16px;">
             <h3 style="font-size:14px; margin-bottom:6px;">🔥 Популярное</h3>
             <div class="product-card" onclick="addPopular('Такос Классический', 295)" style="cursor:pointer;">
-                <span>🌮 Такос Классический</span>
-                <span style="color:#f472b6; font-weight:700;">295 ₽</span>
+                <div class="product-content">
+                    <div class="product-img">🌮</div>
+                    <div class="product-info">
+                        <div class="product-name">Такос Классический</div>
+                        <div class="product-price">295 ₽</div>
+                    </div>
+                </div>
             </div>
             <div class="product-card" onclick="addPopular('Такос мясной', 365)" style="cursor:pointer; margin-top:6px;">
-                <span>🌮 Такос мясной</span>
-                <span style="color:#f472b6; font-weight:700;">365 ₽</span>
+                <div class="product-content">
+                    <div class="product-img">🌮</div>
+                    <div class="product-info">
+                        <div class="product-name">Такос мясной</div>
+                        <div class="product-price">365 ₽</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -583,7 +605,7 @@
     <div id="profilePage" class="page">
         <div class="page-title">👤 Профиль</div>
         <div class="profile-card">
-            <div class="avatar">👤</div>
+            <div class="avatar" id="userAvatar">👤</div>
             <div class="name" id="userNameDisplay">Гость</div>
             <div class="phone" id="userPhoneDisplay">+7 (XXX) XXX-XX-XX</div>
         </div>
@@ -641,30 +663,18 @@
     <div style="background:white; border-radius:24px; padding:24px; max-width:420px; max-height:80vh; overflow-y:auto; width:100%;">
         <h3 style="margin-bottom:12px; color:#831843;">📄 Пользовательское соглашение</h3>
         <div style="font-size:14px; line-height:1.7; color:#333;">
-
             <p><strong>1. Общие положения</strong></p>
-            <p>Настоящее Пользовательское соглашение (далее — Соглашение) регулирует отношения между X (далее — Сервис) и Пользователем.</p>
-
+            <p>Настоящее Пользовательское соглашение регулирует отношения между X и Пользователем.</p>
             <p><strong>2. Условия использования</strong></p>
             <p>2.1. Пользователь обязуется предоставлять достоверные данные.</p>
             <p>2.2. Пользователь несет ответственность за сохранность пароля.</p>
-            <p>2.3. Сервис не несет ответственности за задержки доставки.</p>
-
             <p><strong>3. Персональные данные</strong></p>
             <p>3.1. Пользователь дает согласие на обработку персональных данных.</p>
             <p>3.2. Данные используются только для обработки заказов.</p>
-
-            <p><strong>4. Права и обязанности</strong></p>
-            <p>4.1. Сервис обязуется обрабатывать заказы в течение 24 часов.</p>
-            <p>4.2. Пользователь обязуется оплачивать заказы в соответствии с ценами.</p>
-
-            <p><strong>5. Ответственность</strong></p>
-            <p>5.1. Сервис не несет ответственности за качество товаров.</p>
-            <p>5.2. Пользователь проверяет заказ при получении.</p>
-
-            <p><strong>6. Принятие условий</strong></p>
-            <p>Используя Сервис, Пользователь автоматически соглашается с условиями данного Соглашения.</p>
-
+            <p><strong>4. Ответственность</strong></p>
+            <p>4.1. Сервис не несет ответственности за качество товаров.</p>
+            <p><strong>5. Принятие условий</strong></p>
+            <p>Используя Сервис, Пользователь соглашается с условиями.</p>
         </div>
         <button onclick="closeTerms()" style="margin-top:16px; padding:12px 24px; background:linear-gradient(135deg, #f472b6, #be185d); color:white; border:none; border-radius:30px; cursor:pointer; font-weight:600; width:100%; font-size:15px;">
             ✅ Принимаю
@@ -673,34 +683,36 @@
 </div>
 
 <script>
+    // ===== НОРМАЛИЗАЦИЯ ТЕЛЕФОНА =====
     function normalizePhone(phone) {
         return phone.replace(/\D/g, '');
     }
 
+    // ===== ДАННЫЕ ТОВАРОВ (С ФОТО) =====
     const PRODUCTS_DATA = {
         pizza: [
-            { id: 1, name: 'Маргарита', desc: 'Томатный соус, моцарелла, базилик', price: 450, emoji: '🍕' },
-            { id: 2, name: 'Пепперони', desc: 'Томатный соус, пепперони, моцарелла', price: 550, emoji: '🍕' },
-            { id: 3, name: 'Четыре сыра', desc: 'Сливочный соус, 4 вида сыра', price: 600, emoji: '🧀' }
+            { id: 1, name: 'Маргарита', desc: 'Томатный соус, моцарелла, базилик', price: 450, emoji: '🍕', photo: '' },
+            { id: 2, name: 'Пепперони', desc: 'Томатный соус, пепперони, моцарелла', price: 550, emoji: '🍕', photo: '' },
+            { id: 3, name: 'Четыре сыра', desc: 'Сливочный соус, 4 вида сыра', price: 600, emoji: '🧀', photo: '' }
         ],
         burger: [
-            { id: 4, name: 'Классический', desc: 'Говяжья котлета, салат, помидор', price: 350, emoji: '🍔' },
-            { id: 5, name: 'Двойной', desc: 'Две котлеты, двойной сыр, бекон', price: 450, emoji: '🍔' }
+            { id: 4, name: 'Классический', desc: 'Говяжья котлета, салат, помидор', price: 350, emoji: '🍔', photo: '' },
+            { id: 5, name: 'Двойной', desc: 'Две котлеты, двойной сыр, бекон', price: 450, emoji: '🍔', photo: '' }
         ],
         salad: [
-            { id: 6, name: 'Цезарь', desc: 'Курица, салат, сухарики, соус', price: 320, emoji: '🥗' },
-            { id: 7, name: 'Греческий', desc: 'Овощи, фета, оливки, масло', price: 280, emoji: '🥗' }
+            { id: 6, name: 'Цезарь', desc: 'Курица, салат, сухарики, соус', price: 320, emoji: '🥗', photo: '' },
+            { id: 7, name: 'Греческий', desc: 'Овощи, фета, оливки, масло', price: 280, emoji: '🥗', photo: '' }
         ],
         drink: [
-            { id: 8, name: 'Кола', desc: '0.5л', price: 100, emoji: '🥤' },
-            { id: 9, name: 'Сок', desc: 'Апельсиновый, 0.3л', price: 120, emoji: '🧃' }
+            { id: 8, name: 'Кола', desc: '0.5л', price: 100, emoji: '🥤', photo: '' },
+            { id: 9, name: 'Сок', desc: 'Апельсиновый, 0.3л', price: 120, emoji: '🧃', photo: '' }
         ],
         tacos: [
-            { id: 10, name: 'Такос Классический', desc: 'Куриный', price: 295, emoji: '🌮' },
-            { id: 11, name: 'Такос мясной', desc: 'Мясной', price: 365, emoji: '🌮' }
+            { id: 10, name: 'Такос Классический', desc: 'Куриный', price: 295, emoji: '🌮', photo: '' },
+            { id: 11, name: 'Такос мясной', desc: 'Мясной', price: 365, emoji: '🌮', photo: '' }
         ],
         fries: [
-            { id: 12, name: 'Картофель фри', desc: 'Хрустящая картошка', price: 150, emoji: '🍟' }
+            { id: 12, name: 'Картофель фри', desc: 'Хрустящая картошка', price: 150, emoji: '🍟', photo: '' }
         ]
     };
 
@@ -712,6 +724,7 @@
         { id: 'drink', name: '🥤 Напитки' }
     ];
 
+    // ===== СОСТОЯНИЕ =====
     let state = {
         user: null,
         users: [],
@@ -723,6 +736,7 @@
         isAdmin: false
     };
 
+    // ===== ЗАГРУЗКА / СОХРАНЕНИЕ =====
     function loadState() {
         try {
             const saved = localStorage.getItem('restaurant_app_state');
@@ -756,6 +770,7 @@
         } catch (e) { console.warn('⚠️ Ошибка сохранения:', e); }
     }
 
+    // ===== АВТОРИЗАЦИЯ =====
     function switchAuthTab(tab) {
         document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
         if (tab === 'login') {
@@ -800,35 +815,12 @@
         backToLogin();
     }
 
-    // ===== ФУНКЦИИ ДЛЯ СОГЛАШЕНИЯ =====
-    function openTerms() {
-        document.getElementById('termsModal').style.display = 'flex';
-    }
-
-    function closeTerms() {
-        document.getElementById('termsModal').style.display = 'none';
-    }
-
-    // Закрытие по клику на фон
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('termsModal');
-        if (modal) {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeTerms();
-                }
-            });
-        }
-    });
-
-    // ===== РЕГИСТРАЦИЯ С ПРОВЕРКОЙ СОГЛАШЕНИЯ =====
     function registerUser() {
         const name = document.getElementById('regName').value.trim();
         const phone = document.getElementById('regPhone').value.trim();
         const password = document.getElementById('regPassword').value;
         const agree = document.getElementById('regAgree').checked;
 
-        // ===== ПРОВЕРКА СОГЛАШЕНИЯ =====
         if (!agree) {
             alert('Примите пользовательское соглашение!');
             return;
@@ -905,10 +897,21 @@
         document.getElementById('authPage').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         document.getElementById('userNameHeader').innerHTML = '👤 ' + state.user.name;
+        
+        // Аватар
+        try {
+            const tg = window.Telegram.WebApp;
+            const user = tg.initDataUnsafe?.user;
+            if (user?.photo_url) {
+                document.getElementById('userAvatar').innerHTML = `<img src="${user.photo_url}" alt="avatar">`;
+            }
+        } catch(e) {}
+        
         renderAll();
         switchPage('menu');
     }
 
+    // ===== КОРЗИНА =====
     function addToCart(id, name, price) {
         if (state.cart[id]) { state.cart[id].quantity++; }
         else { state.cart[id] = { id, name, price, quantity: 1 }; }
@@ -937,6 +940,7 @@
         return Object.values(state.cart).reduce((s, i) => s + i.price * i.quantity, 0);
     }
 
+    // ===== ИЗБРАННОЕ =====
     function toggleFavorite(id) {
         const idx = state.favorites.indexOf(id);
         if (idx > -1) { state.favorites.splice(idx, 1); }
@@ -957,6 +961,7 @@
         renderCartPage();
     }
 
+    // ===== РЕНДЕР =====
     function renderCategories() {
         const container = document.getElementById('categoriesContainer');
         container.innerHTML = '';
@@ -989,10 +994,13 @@
             const div = document.createElement('div');
             div.className = 'product-card';
             div.innerHTML = `
-                <div class="product-info">
-                    <div class="product-name">${p.emoji} ${p.name}</div>
-                    <div class="product-desc">${p.desc || ''}</div>
-                    <div class="product-price">${p.price} ₽</div>
+                <div class="product-content">
+                    <div class="product-img">${p.photo ? `<img src="${p.photo}" alt="${p.name}">` : p.emoji}</div>
+                    <div class="product-info">
+                        <div class="product-name">${p.emoji} ${p.name}</div>
+                        <div class="product-desc">${p.desc || ''}</div>
+                        <div class="product-price">${p.price} ₽</div>
+                    </div>
                 </div>
                 <div class="product-actions">
                     <button class="icon-btn ${fav ? 'fav-active' : ''}" onclick="toggleFavorite(${p.id})">${fav ? '❤️' : '🤍'}</button>
@@ -1088,9 +1096,12 @@
             if (p) {
                 html += `
                     <div class="product-card">
-                        <div class="product-info">
-                            <div class="product-name">${p.emoji} ${p.name}</div>
-                            <div class="product-price">${p.price} ₽</div>
+                        <div class="product-content">
+                            <div class="product-img">${p.photo ? `<img src="${p.photo}" alt="${p.name}">` : p.emoji}</div>
+                            <div class="product-info">
+                                <div class="product-name">${p.emoji} ${p.name}</div>
+                                <div class="product-price">${p.price} ₽</div>
+                            </div>
                         </div>
                         <div class="product-actions">
                             <button class="icon-btn fav-active" onclick="toggleFavorite(${p.id}); renderFavoritesPage();">❤️</button>
@@ -1163,6 +1174,7 @@
         renderAdminPanel();
     }
 
+    // ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
     function checkout() {
         if (Object.keys(state.cart).length === 0) {
             alert('Корзина пуста!');
@@ -1184,10 +1196,25 @@
         saveState();
         updateCartCount();
         alert('✅ Заказ #' + order.id + ' принят!\nСумма: ' + total + ' ₽\nБонусов: ' + earned);
+        
+        // Уведомление админу в Telegram (если есть Python-бот)
+        try {
+            const tg = window.Telegram.WebApp;
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'order',
+                    order: order,
+                    total: total,
+                    user: state.user
+                }));
+            }
+        } catch(e) {}
+        
         renderAll();
         switchPage('profile');
     }
 
+    // ===== НАВИГАЦИЯ =====
     function switchPage(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1240,9 +1267,12 @@
             const div = document.createElement('div');
             div.className = 'product-card';
             div.innerHTML = `
-                <div class="product-info">
-                    <div class="product-name">${p.emoji} ${p.name}</div>
-                    <div class="product-price">${p.price} ₽</div>
+                <div class="product-content">
+                    <div class="product-img">${p.photo ? `<img src="${p.photo}" alt="${p.name}">` : p.emoji}</div>
+                    <div class="product-info">
+                        <div class="product-name">${p.emoji} ${p.name}</div>
+                        <div class="product-price">${p.price} ₽</div>
+                    </div>
                 </div>
                 <div class="product-actions">
                     <button class="icon-btn ${fav ? 'fav-active' : ''}" onclick="toggleFavorite(${p.id})">${fav ? '❤️' : '🤍'}</button>
@@ -1255,20 +1285,85 @@
         });
     }
 
+    // ===== ФУНКЦИИ ДЛЯ СОГЛАШЕНИЯ =====
+    function openTerms() {
+        document.getElementById('termsModal').style.display = 'flex';
+    }
+
+    function closeTerms() {
+        document.getElementById('termsModal').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('termsModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeTerms();
+                }
+            });
+        }
+    });
+
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
     loadState();
+
+    // Попытка авторизации через Telegram
+    function tryTelegramAuth() {
+        try {
+            const tg = window.Telegram.WebApp;
+            const user = tg.initDataUnsafe?.user;
+            
+            if (user) {
+                let existingUser = state.users.find(u => u.id === user.id);
+                
+                if (!existingUser) {
+                    const newUser = {
+                        id: user.id,
+                        name: user.first_name || 'Гость',
+                        phone: user.phone_number || '—',
+                        password: 'tg_auth',
+                        isTelegram: true
+                    };
+                    state.users.push(newUser);
+                    state.user = newUser;
+                } else {
+                    state.user = existingUser;
+                }
+                
+                if (user.id === 5140927230) {
+                    state.isAdmin = true;
+                    document.getElementById('adminMenuItem').style.display = 'flex';
+                    document.body.classList.add('is-admin');
+                }
+                
+                saveState();
+                enterApp();
+                return true;
+            }
+        } catch (e) {
+            console.warn('Telegram Auth не сработала:', e);
+        }
+        return false;
+    }
 
     if (state.user) {
         document.getElementById('authPage').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         document.getElementById('userNameHeader').innerHTML = '👤 ' + state.user.name;
-        if (state.user.id === 9999) {
-            state.isAdmin = true;
-            document.getElementById('adminMenuItem').style.display = 'flex';
-            document.body.classList.add('is-admin');
-        }
+        
+        // Аватар
+        try {
+            const tg = window.Telegram.WebApp;
+            const user = tg.initDataUnsafe?.user;
+            if (user?.photo_url) {
+                document.getElementById('userAvatar').innerHTML = `<img src="${user.photo_url}" alt="avatar">`;
+            }
+        } catch(e) {}
+        
         renderAll();
         switchPage('menu');
-    } else {
+    } else if (!tryTelegramAuth()) {
         document.getElementById('authPage').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
     }
